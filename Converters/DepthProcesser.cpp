@@ -16,8 +16,17 @@ DepthProcesser::~DepthProcesser()
 }
 
 uint32 DepthProcesser::Convert(uint16 depth) {
-	unsigned short max = 9000;
-	unsigned short temp = (1.0f-depth*1.0f/max*1.0f)*256;
+	uint16 max = 8000;
+	uint32 temp;
+	if (depth > (uint16)1800) {
+		temp = (int)0x000001 + (int)0x000001 * (int)(128 * (1 - ((depth - 1800.0f) / 6200.0f)));
+	}
+	else {
+		temp = (int)0x010000 + (int)0x010000 * (int)(256 * (1 - (depth* 1.0f / 1800.0f)));
+
+		//temp = (1.0f - depth / (uint16)1500) * (int)0xFF0000;
+	}
+
 	return temp;
 }
 void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield, int m_depthWidth, int m_depthHeight) {
