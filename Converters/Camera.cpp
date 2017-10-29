@@ -1,7 +1,7 @@
 #include "Camera.h"
 vec3 MyCamera::Pixel(int x, int y, int width, int height) {
-	float tempx = 2.0f * x / width - 1.0f;
-	float tempy = (2.0f * y / height - 1.0f)*(-1.0f);
+	float tempx = (2.0f * x / width) ;
+	float tempy = (2.0f * y / height)*(-1.0f);
 	return up*tempy + right*tempx + forward;
 }
 
