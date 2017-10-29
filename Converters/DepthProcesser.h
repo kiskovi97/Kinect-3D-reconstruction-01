@@ -16,6 +16,6 @@ public:
 	~DepthProcesser();
 
 	uint32 Convert(uint16 depth);
-	void Process(uint16* depthfield, uint32* RGBfield, int m_depthWidth, int m_depthHeight);
+	void Process(uint16* depthfield, uint32* RGBfield, const int m_depthWidth, const int m_depthHeight);
 };
 

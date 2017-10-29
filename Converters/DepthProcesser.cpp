@@ -29,12 +29,13 @@ uint32 DepthProcesser::Convert(uint16 depth) {
 
 	return temp;
 }
-void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield, int m_depthWidth, int m_depthHeight) {
+void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_depthWidth,const int m_depthHeight) {
 	
 	int m_Depth = m_depthHeight / (2 * cos(0.3752)); // 21.5fok
 	cam.forward = vec3(0, 0,  m_Depth*0.1f);
 	cam.right = vec3(m_depthWidth*0.05f, 0, 0);
 	cam.up = vec3(0, m_depthHeight*0.05f, 0);
+	uint16 DepthMap[m_depthWidth*m_depthHeight];
 
 	for (int i = 0; i < m_depthWidth * m_depthHeight; ++i)
 	{
