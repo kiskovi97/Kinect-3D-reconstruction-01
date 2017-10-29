@@ -1,5 +1,5 @@
 #include "DepthProcesser.h"
-
+#include <vector>
 
 typedef unsigned short uint16;
 typedef unsigned int uint32;
@@ -35,7 +35,7 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 	cam.forward = vec3(0, 0,  m_Depth*0.1f);
 	cam.right = vec3(m_depthWidth*0.05f, 0, 0);
 	cam.up = vec3(0, m_depthHeight*0.05f, 0);
-	uint16 DepthMap[m_depthWidth*m_depthHeight];
+	std::vector<uint16> DepthMap(m_depthWidth*m_depthHeight);
 
 	for (int i = 0; i < m_depthWidth * m_depthHeight; ++i)
 	{
@@ -45,7 +45,6 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 		vec3 irany = temp_pont - cam.position;
 		irany=irany.normalize();
 		pontok.push_back(irany*depthfield[i]+cam.position);
-
 		RGBfield[i] = 0x000000;//Convert(depthfield[i]);
 	}
 
@@ -63,7 +62,17 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 		int y = ((1.0f-_y) / 2.0f)*m_depthHeight;
 		if (x >= m_depthWidth || y >= m_depthHeight || x < 0 || y < 0){
 			//printf("Hus");
-		} else RGBfield[y*m_depthWidth + x] = Convert((pont-nezo.position).Length());
+		}
+		else {
+			if (DepthMap[y*m_depthWidth + x]==0  || DepthMap[y*m_depthWidth + x] >  (pont - nezo.position).Length())
+			DepthMap[y*m_depthWidth + x] = (pont - nezo.position).Length(); 
+			// RGBfield[y*m_depthWidth + x] = Convert((pont-nezo.position).Length());
+		}
+	}
+	for (int i = 0; i < m_depthWidth * m_depthHeight; ++i)
+	{
+		
+		RGBfield[i] = Convert(DepthMap[i]);
 	}
 	
 
