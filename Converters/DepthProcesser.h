@@ -9,6 +9,7 @@ class DepthProcesser
 private:
 	std::list<vec3> pontok;
 	MyCamera cam;
+	MyCamera nezo;
 	bool elore = true;
 public:
 	DepthProcesser();
