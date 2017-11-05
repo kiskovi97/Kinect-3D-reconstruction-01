@@ -48,35 +48,39 @@ uint32 DepthProcesser::Convert(uint16 depth) {
 }
 void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_depthWidth,const int m_depthHeight) {
 	
-	int m_Depth = m_depthHeight / (2 * cos(0.3752)); // 21.5fok
-	cam.forward = vec3(0, 0,  m_Depth*0.1f);
-	cam.right = vec3(m_depthWidth*0.05f, 0, 0);
-	cam.up = vec3(0, m_depthHeight*0.05f, 0);
+	float m_Depth = m_depthWidth / (2.0f*tanf(0.497419f)); // 21.5fok
+	cam.forward = vec3(0, 0,  m_Depth*1.0f);
+	cam.right = vec3(m_depthWidth*0.5f, 0, 0);
+	cam.up = vec3(0, m_depthHeight*0.5f, 0);
 	std::vector<uint16> DepthMap(m_depthWidth*m_depthHeight);
 
 	for (int i = 0; i < m_depthWidth * m_depthHeight; ++i)
 	{
-		int x = i%m_depthWidth;
+		int x = i % m_depthWidth;
 		int y = (i - x) / m_depthWidth;
-		vec3 temp_pont = cam.Pixel(x - m_depthWidth / 2, y - m_depthHeight / 2, m_depthWidth, m_depthHeight);
+		vec3 temp_pont = cam.Pixel(x - (m_depthWidth / 2), y - (m_depthHeight / 2), m_depthWidth, m_depthHeight);
 		vec3 irany = temp_pont - cam.position;
+		float my = depthfield[i]*1.0f * ((y - (m_depthHeight / 2))*(-1.0f) / (2.0f * m_Depth));
+		float mx = depthfield[i]*1.0f * ((x - (m_depthWidth / 2))*(1.0f) / (2.0f * m_Depth));
+
 		irany=irany.normalize();
-		pontok.push_back(irany*depthfield[i]+cam.position);
+		pontok.push_back(cam.forward.normalize()*(depthfield[i] / 3.0f) + cam.right.normalize()*mx + cam.up.normalize()*my + cam.position);
+		//pontok.push_back(irany*depthfield[i]+cam.position);
 		RGBfield[i] = 0x000000;//Convert(depthfield[i]);
 	}
 
-	if (elore) nezo.position = nezo.position + vec3(5, 0, 0);
+	/*if (elore) nezo.position = nezo.position + vec3(5, 0, 0);
 	else nezo.position = nezo.position - vec3(5, 0, 0);
 	if (nezo.position.x > 400) elore = false;
-	if (nezo.position.x < -400) elore = true;
+	if (nezo.position.x < -400) elore = true;*/
 	
 	for (vec3 pont : pontok) {
 		vec3 irany = pont - nezo.position;
 		vec3 pixel = nezo.position + irany*(dota(nezo.forward, nezo.forward) / dota(nezo.forward, irany));
 		float _x = dota(pixel - nezo.position, nezo.right) / (nezo.right.Length()*nezo.right.Length());
 		float _y = dota(pixel - nezo.position, nezo.up) / (nezo.up.Length()*nezo.up.Length());
-		int x = ((_x+1.0f) / 2.0f)*m_depthWidth;
-		int y = ((1.0f-_y) / 2.0f)*m_depthHeight;
+		int x = ((_x+0.25f) * 2.0f)*m_depthWidth;
+		int y = ((0.25f-_y) * 2.0f)*m_depthHeight;
 		if (x >= m_depthWidth || y >= m_depthHeight || x < 0 || y < 0){
 			//printf("Hus");
 		}
