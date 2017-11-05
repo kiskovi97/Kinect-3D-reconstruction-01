@@ -15,6 +15,23 @@ DepthProcesser::~DepthProcesser()
 {
 }
 
+void DepthProcesser::WriteOut() {
+	std::ofstream myfile;
+	myfile.open("example.obj");
+	myfile << "# Scanner_file" << std::endl;
+	myfile << "o ScanObject" << std::endl;
+	for (vec3 pont : pontok) {
+		myfile << "v " << pont.x<<" "<<pont.y<<" "<<pont.z << std::endl;
+	}
+	for (vec3 pont : pontok) {
+		myfile << "vn " << "-1.0000 0.00000 0.0000" << std::endl;
+	}
+	
+	myfile << "usemtl None" << std::endl;
+	myfile << "s off" << std::endl;
+	myfile.close();
+}
+
 uint32 DepthProcesser::Convert(uint16 depth) {
 	uint16 max = 8000;
 	uint32 temp;
@@ -75,7 +92,10 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 		RGBfield[i] = Convert(DepthMap[i]);
 	}
 	
-
+	if (!pontok.empty() && file) {
+		WriteOut();
+		file = false;
+	}
 	pontok.clear();
 }
 
