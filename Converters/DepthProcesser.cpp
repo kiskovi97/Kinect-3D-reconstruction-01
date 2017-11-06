@@ -47,7 +47,6 @@ uint32 DepthProcesser::Convert(uint16 depth) {
 	return temp;
 }
 void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_depthWidth,const int m_depthHeight) {
-	
 	float m_Depth = m_depthWidth / (2.0f*tanf(0.497419f)); // 21.5fok
 	cam.forward = vec3(0, 0,  m_Depth*1.0f);
 	cam.right = vec3(m_depthWidth*0.5f, 0, 0);
@@ -68,6 +67,7 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 		//pontok.push_back(irany*depthfield[i]+cam.position);
 		RGBfield[i] = 0x000000;//Convert(depthfield[i]);
 	}
+	
 
 	/*if (elore) nezo.position = nezo.position + vec3(5, 0, 0);
 	else nezo.position = nezo.position - vec3(5, 0, 0);

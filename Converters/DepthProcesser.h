@@ -1,8 +1,9 @@
 #pragma once
-#include <list>
+#include <vector>
 #include "Camera.h"
 #include <iostream>
 #include <fstream>
+#include "ICP.h"
 
 
 typedef unsigned short uint16;
@@ -10,7 +11,8 @@ typedef unsigned int uint32;
 class DepthProcesser
 {
 private:
-	std::list<vec3> pontok;
+	ICP icp;
+	std::vector<vec3> pontok;
 	MyCamera cam;
 	MyCamera nezo;
 	bool elore = true;
