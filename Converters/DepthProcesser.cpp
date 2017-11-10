@@ -8,6 +8,17 @@ DepthProcesser::DepthProcesser()
 {
 	cam.position = vec3(0, 0, 0);
 	nezo.position = vec3(0, 0, 0);
+	array3D.resize(HEIGHT);
+	for (int i = 0; i < HEIGHT; ++i) {
+		array3D[i].resize(WIDTH);
+
+		for (int j = 0; j < WIDTH; ++j) {
+			array3D[i][j].resize(DEPTH);
+			for (int k = 0; k < DEPTH; ++k)
+				array3D[i][j][k] = false;
+		}
+			
+	}
 }
 
 
@@ -15,20 +26,114 @@ DepthProcesser::~DepthProcesser()
 {
 }
 
+void DepthProcesser::MarchingCubes() {
+
+	for (int i = 0; i < 199; i++)
+		for (int j = 0; j < 199; j++)
+			for (int k = 0; k < 99; k++)
+			{
+				MCube(i,j,k);
+			}
+
+}
+
+void DepthProcesser::MCube(int x, int y, int z) {
+	bool A = array3D[x][y][z];
+	bool B = array3D[x+1][y][z];
+	bool C = array3D[x+1][y][z+1];
+	bool D = array3D[x][y][z+1];
+	bool E = array3D[x][y+1][z];
+	bool F = array3D[x+1][y+1][z];
+	bool G = array3D[x+1][y+1][z+1];
+	bool H = array3D[x][y+1][z+1];
+	/*if (A && !B && !C && !D && !E && !F && !G && !H)
+	{
+		std::vector<vec3> har;
+		har.push_back(vec3(x + 0.5, y, z));
+		har.push_back(vec3(x, y + 0.5, z));
+		har.push_back(vec3(x, y, z + 0.5));
+		har.push_back(vec3(1, 1, 1).normalize());
+		haromszogek.push_back(har);
+	}
+	if (A && B && !C && !D && !E && !F && !G && !H)
+	{
+		std::vector<vec3> har, har2;
+		har.push_back(vec3(x + 0.5, y, z));
+		har.push_back(vec3(x+1, y , z + 0.5));
+		har.push_back(vec3(x+1, y + 0.5, z + 0.5));
+		har.push_back(vec3(0, 1, 1).normalize());
+		haromszogek.push_back(har);
+		har2.push_back(vec3(x + 0.5, y, z));
+		har2.push_back(vec3(x , y + 0.5, z ));
+		har2.push_back(vec3(x + 1, y + 0.5, z + 0.5));
+		har2.push_back(vec3(0, 1, 1).normalize());
+		haromszogek.push_back(har2);
+	}
+	if (A && B && C && D && !E && !F && !G && !H)
+	{
+		std::vector<vec3> har, har2;
+		har.push_back(vec3(x , y + 0.5, z));
+		har.push_back(vec3(x + 1, y + 0.5, z));
+		har.push_back(vec3(x + 1, y + 0.5, z + 1));
+		har.push_back(vec3(0, 1, 0).normalize());
+		haromszogek.push_back(har);
+		har2.push_back(vec3(x , y + 0.5, z));
+		har2.push_back(vec3(x, y + 0.5, z + 1));
+		har2.push_back(vec3(x + 1, y + 0.5, z + 1));
+		har2.push_back(vec3(0, 1, 0).normalize());
+		haromszogek.push_back(har2);
+	}*/
+
+	std::vector<int> triangles = mcb.Haromszogek(A + B * 2 + C * 4 + D * 8 + E * 16 + F * 32 + G * 64 + H * 128);
+	if (triangles.size()>0)
+	for (int i = 0; i < (triangles.size()); i+=3)
+	{
+		std::vector<vec3> har;
+		har.push_back(vec3(x, y, z) + eltolas[triangles[i]]);
+		har.push_back(vec3(x, y, z) + eltolas[triangles[i+1]]);
+		har.push_back(vec3(x, y, z) + eltolas[triangles[i+2]]);
+		har.push_back(vec3(0, 1, 0).normalize());
+		haromszogek.push_back(har);
+	}
+	
+}
+
 void DepthProcesser::WriteOut() {
 	std::ofstream myfile;
 	myfile.open("example.obj");
 	myfile << "# Scanner_file" << std::endl;
 	myfile << "o ScanObject" << std::endl;
-	for (vec3 pont : pontok) {
+
+	for (std::vector<vec3> har : haromszogek)
+	{
+		myfile << "v " << har[0].x << " " << har[0].y << " " << har[0].z << std::endl;
+		myfile << "v " << har[1].x << " " << har[1].y << " " << har[1].z << std::endl;
+		myfile << "v " << har[2].x << " " << har[2].y << " " << har[2].z << std::endl;
+	}
+
+	for (std::vector<vec3> har : haromszogek)
+	{
+		myfile << "vn " << har[3].x << " " << har[3].y << " " << har[3].z << std::endl;
+		myfile << "vn " << har[3].x << " " << har[3].y << " " << har[3].z << std::endl;
+		myfile << "vn " << har[3].x << " " << har[3].y << " " << har[3].z << std::endl;
+	}
+
+	/*for (vec3 pont : pontok) {
 		myfile << "v " << pont.x<<" "<<pont.y<<" "<<pont.z << std::endl;
 	}
 	for (vec3 pont : pontok) {
 		myfile << "vn " << "-1.0000 0.00000 0.0000" << std::endl;
-	}
+	}*/
 	
 	myfile << "usemtl None" << std::endl;
 	myfile << "s off" << std::endl;
+	int i = 0;
+	for (std::vector<vec3> har : haromszogek)
+	{
+		myfile << "f " << i*3 +1 << "//" << i+1 << " "<< i * 3 +2<< "//" << i + 1 <<" "<< i * 3 +3 << "//" << i + 1 << std::endl;
+		i++;
+	}
+
 	myfile.close();
 }
 
@@ -53,6 +158,8 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 	cam.up = vec3(0, m_depthHeight*0.5f, 0);
 	std::vector<uint16> DepthMap(m_depthWidth*m_depthHeight);
 
+
+
 	for (int i = 0; i < m_depthWidth * m_depthHeight; ++i)
 	{
 		int x = i % m_depthWidth;
@@ -68,11 +175,18 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 		pont.y = (int)pont.y - (int)pont.y % 10;
 		pont.z = (int)pont.z - (int)pont.z % 10;
 		
-		if (pont.z<1000) pontok.push_back(pont);
-		//pontok.push_back(irany*depthfield[i]+cam.position);
-		RGBfield[i] = 0x000000;//Convert(depthfield[i]);
+		if (pont.z < 1000) {
+			int x = pont.x / 10 + 100;
+			int y = pont.y / 10 + 100;
+			int z = pont.z / 10;
+			if (!array3D[x][y][z]) pontok.push_back(pont);
+			array3D[x][y][z] = true;
+			
+		}
+		
+		
+		RGBfield[i] = 0x000000;
 	}
-
 	
 	for (vec3 pont : pontok) {
 		vec3 irany = pont - nezo.position;
@@ -87,7 +201,6 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 		else {
 			if (DepthMap[y*m_depthWidth + x]==0  || DepthMap[y*m_depthWidth + x] >  (pont - nezo.position).Length())
 			DepthMap[y*m_depthWidth + x] = (pont - nezo.position).Length(); 
-			// RGBfield[y*m_depthWidth + x] = Convert((pont-nezo.position).Length());
 		}
 	}
 	for (int i = 0; i < m_depthWidth * m_depthHeight; ++i)
@@ -97,10 +210,17 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 	}
 	
 	if (!pontok.empty() && file) {
+		MarchingCubes();
 		WriteOut();
 		std::cout << "Written Out" << std::endl;
 		file = false;
 	}
 	pontok.clear();
+
+	for (int i = 0; i < HEIGHT; ++i)
+		for (int j = 0; j < WIDTH; ++j) 
+			for (int k = 0; k < DEPTH; ++k)
+				array3D[i][j][k] = false;
+
 }
 
