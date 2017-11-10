@@ -210,6 +210,7 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 	}
 	
 	if (!pontok.empty() && file) {
+
 		MarchingCubes();
 		WriteOut();
 		std::cout << "Written Out" << std::endl;
