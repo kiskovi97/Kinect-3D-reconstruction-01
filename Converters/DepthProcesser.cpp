@@ -92,7 +92,13 @@ void DepthProcesser::MCube(int x, int y, int z) {
 		har.push_back(vec3(x, y, z) + eltolas[triangles[i]]);
 		har.push_back(vec3(x, y, z) + eltolas[triangles[i+1]]);
 		har.push_back(vec3(x, y, z) + eltolas[triangles[i+2]]);
-		har.push_back(vec3(0, 1, 0).normalize());
+		vec3 a = triangles[i] - triangles[i + 1];
+		vec3 b = triangles[i+1] - triangles[i + 2];
+		vec3 norm;
+		norm.x = a.y*b.z - a.z*b.y;
+		norm.y = a.z * b.x - a.x*b.z;
+		norm.z = a.x*b.y - a.y*b.x;
+		har.push_back(norm.normalize());
 		haromszogek.push_back(har);
 	}
 	
