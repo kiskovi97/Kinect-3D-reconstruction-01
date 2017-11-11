@@ -8,9 +8,15 @@
 
 
 
-#define HEIGHT 200
-#define WIDTH 200
-#define DEPTH 100
+#define HEIGHT 400
+#define WIDTH 400
+#define DEPTH 200
+#define HEIGHT_MAX 1000
+#define HEIGHT_MIN -1000
+#define WIDTH_MAX 1000
+#define WIDTH_MIN -1000
+#define DEPTH_MAX 1000
+
 
 typedef unsigned short uint16;
 typedef unsigned int uint32;
