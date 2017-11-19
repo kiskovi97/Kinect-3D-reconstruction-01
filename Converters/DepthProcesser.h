@@ -23,6 +23,7 @@ typedef unsigned int uint32;
 class DepthProcesser
 {
 private:
+	int elozo_size=0;
 	std::vector<vec3> eltolas = {
 		vec3(0.5,0,0),
 		vec3(1,0,0.5),
@@ -37,9 +38,9 @@ private:
 		vec3(1,0.5,1),
 		vec3(0,0.5,1)
 	};
+	
 	double *Elozoframe;
 	double *Mostaniframe;
-
 	Matrix Forgatas;
 	Matrix Eltolas;
 
@@ -54,6 +55,7 @@ private:
 	bool elso_frame = true;
 	void MyIcp();
 public:
+	
 	DepthProcesser();
 	~DepthProcesser();
 

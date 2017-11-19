@@ -1,6 +1,7 @@
 #include "DepthProcesser.h"
 #include <vector>
 #include <icpPointToPoint.h>
+#include <icpPointToPlane.h>
 
 
 typedef unsigned short uint16;
@@ -150,9 +151,9 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 		int XFaktor = (WIDTH_MAX / WIDTH) * 2;
 		int YFaktor = (HEIGHT_MAX / HEIGHT) * 2;
 		int ZFaktor = (DEPTH_MAX / DEPTH) ;
-		pont.x = (int)pont.x - (int)pont.x % XFaktor;
+		/*pont.x = (int)pont.x - (int)pont.x % XFaktor;
 		pont.y = (int)pont.y - (int)pont.y % YFaktor;
-		pont.z = (int)pont.z - (int)pont.z % ZFaktor;
+		pont.z = (int)pont.z - (int)pont.z % ZFaktor;*/
 		
 		// ha a pont az adott racson belul van bevinni a rendszerbe
 		if (pont.z < DEPTH_MAX) {
@@ -188,38 +189,64 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 	
 	
 	// Frame-ek kiírása
-	{
+	if (!elso_frame){
 		delete[] Elozoframe;
-		Elozoframe = Mostaniframe;
+
+		Elozoframe = new double[3 * elozo_size];
+		for (int i = 0; i < elozo_size; i++)
+		{
+			Elozoframe[i * 3] = Mostaniframe[i * 3];
+			Elozoframe[i * 3 + 1] = Mostaniframe[i * 3 +1];
+			Elozoframe[i * 3 + 2] = Mostaniframe[i * 3 +2];
+		}
+		delete[] Mostaniframe;
+
 		Mostaniframe = new double[3 * pontok.size()];
 		for (int i = 0; i < pontok.size(); i++)
 		{
 			Mostaniframe[i * 3] = pontok[i].x;
-			Mostaniframe[i * 3 + 1] = pontok[i].x;
-			Mostaniframe[i * 3 + 2] = pontok[i].x;
+			Mostaniframe[i * 3 + 1] = pontok[i].y;
+			Mostaniframe[i * 3 + 2] = pontok[i].z;
 		}
 
-		MyIcp();
+		Forgatas = Matrix::eye(3);
+		Eltolas = Matrix(3, 1);
+		Matrix R = Matrix::eye(3);
+		Matrix t(3, 1);
+		Eltolas.val[0][0] = 12.0;
+		IcpPointToPoint icp(Elozoframe, elozo_size, 3);
+		double residual = icp.fit(Mostaniframe, pontok.size(), R, t, 200);
+		std::cout << std::endl << residual << std::endl;
+		std::cout << std::endl << R << std::endl;
 		// kimeneti kep kiszinezese
+		
 	}
 
 	for (int i = 0; i < m_depthWidth * m_depthHeight; ++i)
 		RGBfield[i] = Convert(DepthMap[i]);
 
-
+	if (!pontok.empty()) elozo_size = pontok.size();
 
 	// ha vannak pontok es ez az elso kep akkor kiszamitjuk es kiirjuk fileba
 	// Elso lekerdezes
 	if (!pontok.empty() && elso_frame) {
 
-		Mostaniframe = new double[3 * pontok.size()];
-		Elozoframe = new double[3];
+		Mostaniframe = new double[3 * pontok.size()]();
 		for (int i = 0; i < pontok.size(); i++)
 		{
 			Mostaniframe[i * 3] = pontok[i].x;
-			Mostaniframe[i * 3 + 1] = pontok[i].x;
-			Mostaniframe[i * 3 + 2] = pontok[i].x;
+			Mostaniframe[i * 3 + 1] = pontok[i].y;
+			Mostaniframe[i * 3 + 2] = pontok[i].z;
 		}
+		elozo_size = pontok.size();
+		Elozoframe = new double[3 * elozo_size];
+		for (int i = 0; i < elozo_size; i++)
+		{
+			Elozoframe[i * 3] = Mostaniframe[i * 3];
+			Elozoframe[i * 3 + 1] = Mostaniframe[i * 3 + 1];
+			Elozoframe[i * 3 + 2] = Mostaniframe[i * 3 + 2];
+		}
+
 		/* Marching Cubes */
 		//MarchingCubes();
 		//std::cout << "The Math has benn done" << std::endl;
@@ -228,6 +255,7 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 		//std::cout << "Written Out" << std::endl;
 		elso_frame = false;
 	}
+	
 
 	// az adatok torlese egyenlore
 	pontok.clear();
@@ -238,6 +266,3 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 
 }
 
-void DepthProcesser::MyIcp() {
-
-}
