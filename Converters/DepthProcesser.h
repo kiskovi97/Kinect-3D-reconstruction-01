@@ -5,7 +5,7 @@
 #include <fstream>
 #include "ICP.h"
 #include "MarchCubes.h"
-
+#include <matrix.h>
 
 
 #define HEIGHT 200
@@ -37,6 +37,12 @@ private:
 		vec3(1,0.5,1),
 		vec3(0,0.5,1)
 	};
+	double *Elozoframe;
+	double *Mostaniframe;
+
+	Matrix Forgatas;
+	Matrix Eltolas;
+
 	ICP icp;
 	MarchCubes mcb;
 	std::vector<vec3> pontok;
@@ -45,7 +51,8 @@ private:
 	MyCamera cam;
 	MyCamera nezo;
 	bool elore = true;
-	bool file = true;
+	bool elso_frame = true;
+	void MyIcp();
 public:
 	DepthProcesser();
 	~DepthProcesser();
@@ -53,7 +60,7 @@ public:
 	void WriteOut();
 	void MarchingCubes();
 	void MCube(int x, int y, int z);
-
+	
 	uint32 Convert(uint16 depth);
 	void Process(uint16* depthfield, uint32* RGBfield, const int m_depthWidth, const int m_depthHeight);
 };

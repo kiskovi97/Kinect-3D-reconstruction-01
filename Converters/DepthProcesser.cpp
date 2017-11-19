@@ -1,5 +1,7 @@
 #include "DepthProcesser.h"
 #include <vector>
+#include <icpPointToPoint.h>
+
 
 typedef unsigned short uint16;
 typedef unsigned int uint32;
@@ -24,6 +26,8 @@ DepthProcesser::DepthProcesser()
 
 DepthProcesser::~DepthProcesser()
 {
+	delete[] Elozoframe;
+	delete[] Mostaniframe;
 }
 // ez megy vegig minden kockan
 void DepthProcesser::MarchingCubes() {
@@ -165,6 +169,7 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 	// a megjeleniteshez hasznalt depthmap
 	std::vector<uint16> DepthMap(m_depthWidth*m_depthHeight);
 	// pontok alapjan egy kimeneti depth map kiszamitasa
+	
 	for (vec3 pont : pontok) {
 		vec3 irany = pont - nezo.position;
 		vec3 pixel = nezo.position + irany*(dota(nezo.forward, nezo.forward) / dota(nezo.forward, irany));
@@ -180,18 +185,48 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 			DepthMap[y*m_depthWidth + x] = (pont - nezo.position).Length(); 
 		}
 	}
-	// kimeneti kep kiszinezese
-	for (int i = 0; i < m_depthWidth * m_depthHeight; ++i) 
-		RGBfield[i] = Convert(DepthMap[i]);
 	
-	// ha vannak pontok es ez az elso kep akkor kiszamitjuk es kiirjuk fileba
-	if (!pontok.empty() && file) {
+	
+	// Frame-ek kiírása
+	{
+		delete[] Elozoframe;
+		Elozoframe = Mostaniframe;
+		Mostaniframe = new double[3 * pontok.size()];
+		for (int i = 0; i < pontok.size(); i++)
+		{
+			Mostaniframe[i * 3] = pontok[i].x;
+			Mostaniframe[i * 3 + 1] = pontok[i].x;
+			Mostaniframe[i * 3 + 2] = pontok[i].x;
+		}
 
-		MarchingCubes();
-		std::cout << "The Math has benn done" << std::endl;
-		WriteOut();
-		std::cout << "Written Out" << std::endl;
-		file = false;
+		MyIcp();
+		// kimeneti kep kiszinezese
+	}
+
+	for (int i = 0; i < m_depthWidth * m_depthHeight; ++i)
+		RGBfield[i] = Convert(DepthMap[i]);
+
+
+
+	// ha vannak pontok es ez az elso kep akkor kiszamitjuk es kiirjuk fileba
+	// Elso lekerdezes
+	if (!pontok.empty() && elso_frame) {
+
+		Mostaniframe = new double[3 * pontok.size()];
+		Elozoframe = new double[3];
+		for (int i = 0; i < pontok.size(); i++)
+		{
+			Mostaniframe[i * 3] = pontok[i].x;
+			Mostaniframe[i * 3 + 1] = pontok[i].x;
+			Mostaniframe[i * 3 + 2] = pontok[i].x;
+		}
+		/* Marching Cubes */
+		//MarchingCubes();
+		//std::cout << "The Math has benn done" << std::endl;
+		/* kiírás obj-be */
+		//WriteOut();
+		//std::cout << "Written Out" << std::endl;
+		elso_frame = false;
 	}
 
 	// az adatok torlese egyenlore
@@ -203,3 +238,6 @@ void DepthProcesser::Process(uint16* depthfield, uint32* RGBfield,const int m_de
 
 }
 
+void DepthProcesser::MyIcp() {
+
+}
